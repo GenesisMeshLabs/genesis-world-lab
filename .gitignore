@@ -1,0 +1,3 @@
+/bridge/bridge
+*.o
+.DS_Store
