@@ -30,4 +30,5 @@ if($Player -and -not(Get-LabProcess "client-$Player" $LuantiExe)){
  $p=Start-Process -FilePath $LuantiExe -ArgumentList "--go --address 127.0.0.1 --port 30000 --name $Player --password-file `"$LabRoot/credentials/$Player.password`" --config `"$clientConfig`" --logfile `"$LabRoot/logs/client-$Player.log`"" -WindowStyle Hidden -PassThru
  $p.Id|Set-Content "$LabRoot/client-$Player.pid"
 }
+if(Test-Path "$LabRoot/tunnel.json"){& "$PSScriptRoot/start-tunnel.ps1"}
 Write-Output "Bridge ready at http://$($config.address); Mineclonia listening at 127.0.0.1:30000 (UDP)."

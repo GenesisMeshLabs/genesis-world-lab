@@ -65,6 +65,10 @@ func (s *Server) initBrowser() {
 }
 
 func (s *Server) browserOrigin(r *http.Request) bool {
+	if s.publicBrowserRequest(r) {
+		origin := r.Header.Get("Origin")
+		return (origin == "" || origin == s.cfg.BrowserPublicOrigin) && r.Header.Get("Sec-Fetch-Site") != "cross-site"
+	}
 	host, port, e := net.SplitHostPort(r.Host)
 	_, expectedPort, _ := net.SplitHostPort(s.cfg.Address)
 	if e != nil || port != expectedPort || (host != "127.0.0.1" && host != "localhost" && host != "::1") {
@@ -79,7 +83,22 @@ func (s *Server) browserOrigin(r *http.Request) bool {
 	return r.Header.Get("Sec-Fetch-Site") != "cross-site"
 }
 
+func (s *Server) publicBrowserRequest(r *http.Request) bool {
+	if s.cfg.BrowserPublicOrigin == "" {
+		return false
+	}
+	u, err := url.Parse(s.cfg.BrowserPublicOrigin)
+	return err == nil && r.Host == u.Host
+}
+
 func (s *Server) serveBrowser(w http.ResponseWriter, r *http.Request) {
+	if s.publicBrowserRequest(r) {
+		if r.Header.Get("X-Forwarded-Proto") != "https" {
+			http.Redirect(w, r, s.cfg.BrowserPublicOrigin+r.URL.RequestURI(), http.StatusPermanentRedirect)
+			return
+		}
+		w.Header().Set("Strict-Transport-Security", "max-age=86400")
+	}
 	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 	w.Header().Set("Referrer-Policy", "no-referrer")
 	if !s.browserOrigin(r) {
@@ -113,6 +132,11 @@ func (s *Server) serveBrowser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := session.Player
+	if s.publicBrowserRequest(r) && !contains(s.cfg.BrowserPublicPlayers, name) {
+		s.mu.Unlock()
+		respond(w, 403, Document{"error": "This account is local-only"})
+		return
+	}
 	requestRate := s.rates["browser:"+name]
 	if time.Since(requestRate.at) >= time.Minute {
 		requestRate = rateZero()
@@ -249,6 +273,10 @@ func (s *Server) browserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	expected := accounts[q.Player].Password
+	if s.publicBrowserRequest(r) && !contains(s.cfg.BrowserPublicPlayers, q.Player) {
+		respond(w, 401, Document{"error": "Invalid credentials or identity unavailable"})
+		return
+	}
 	a, z := HashToken(expected), HashToken(q.Password)
 	if expected == "" || subtle.ConstantTimeCompare([]byte(a), []byte(z)) != 1 || !s.identityValid(q.Player) {
 		respond(w, 401, Document{"error": "Invalid credentials or identity unavailable"})

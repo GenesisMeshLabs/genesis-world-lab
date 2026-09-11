@@ -34,16 +34,18 @@ type Principal struct {
 	Game      bool   `json:"game,omitempty"`
 }
 type Config struct {
-	Address             string      `json:"address"`
-	StateFile           string      `json:"state_file"`
-	World               string      `json:"world"`
-	Area                string      `json:"area"`
-	GatewayURL          string      `json:"gateway_url"`
-	Owner               string      `json:"owner"`
-	Authorities         []Authority `json:"authorities"`
-	Players             []Player    `json:"players"`
-	Principals          []Principal `json:"principals"`
-	BrowserAccountsFile string      `json:"browser_accounts_file,omitempty"`
+	Address              string      `json:"address"`
+	StateFile            string      `json:"state_file"`
+	World                string      `json:"world"`
+	Area                 string      `json:"area"`
+	GatewayURL           string      `json:"gateway_url"`
+	Owner                string      `json:"owner"`
+	Authorities          []Authority `json:"authorities"`
+	Players              []Player    `json:"players"`
+	Principals           []Principal `json:"principals"`
+	BrowserAccountsFile  string      `json:"browser_accounts_file,omitempty"`
+	BrowserPublicOrigin  string      `json:"browser_public_origin,omitempty"`
+	BrowserPublicPlayers []string    `json:"browser_public_players,omitempty"`
 }
 
 var namePattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,32}$`)
@@ -63,6 +65,23 @@ func LoadConfig(path string) (Config, error) {
 	return c, c.Validate()
 }
 func (c Config) Validate() error {
+	if c.BrowserPublicOrigin != "" {
+		u, err := url.Parse(c.BrowserPublicOrigin)
+		if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || len(c.BrowserPublicPlayers) == 0 {
+			return errors.New("public browser origin requires an exact HTTPS origin and explicit players")
+		}
+		for _, name := range c.BrowserPublicPlayers {
+			found := false
+			for _, p := range c.Players {
+				if p.Name == name && p.OperatorAuthority == "" {
+					found = true
+				}
+			}
+			if !found {
+				return errors.New("public browser players must be configured non-operator accounts")
+			}
+		}
+	}
 	host, _, e := net.SplitHostPort(c.Address)
 	if e != nil || (host != "127.0.0.1" && host != "::1") {
 		return errors.New("bridge must bind a loopback address")
