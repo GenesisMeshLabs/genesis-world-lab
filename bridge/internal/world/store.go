@@ -22,9 +22,10 @@ type Grant struct {
 	Evidence       Document  `json:"evidence"`
 }
 type State struct {
-	Grants map[string]Grant    `json:"grants"`
-	Floors map[string]Document `json:"floors"`
-	Linked map[string]bool     `json:"linked"`
+	Grants      map[string]Grant       `json:"grants"`
+	Floors      map[string]Document    `json:"floors"`
+	Linked      map[string]bool        `json:"linked"`
+	Expeditions map[string]*Expedition `json:"expeditions,omitempty"`
 }
 type Event struct {
 	ID      uint64    `json:"id"`
@@ -91,6 +92,9 @@ func (s *Store) Load() (State, error) {
 	})
 	if st.Grants == nil || st.Floors == nil || st.Linked == nil {
 		return st, errors.New("invalid persisted lab state")
+	}
+	if st.Expeditions == nil {
+		st.Expeditions = map[string]*Expedition{}
 	}
 	return st, e
 }

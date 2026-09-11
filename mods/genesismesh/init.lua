@@ -170,6 +170,7 @@ if settings:get_bool('genesismesh.browser_enabled',false) then
  dofile(core.get_modpath('genesismesh')..'/browser.lua')({request=request,held=held,inside=inside,lobby=lobby,audit=audit_boundary})
 end
 core.log('action','[genesismesh] Signed-membership enforcement loaded')
+dofile(core.get_modpath('genesismesh')..'/landscape.lua')
 -- Local operator shutdown request: let Luanti flush its world normally.
 local control_elapsed=0
 core.register_globalstep(function(dt)

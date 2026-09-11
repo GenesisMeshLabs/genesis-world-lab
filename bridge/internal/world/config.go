@@ -46,6 +46,7 @@ type Config struct {
 	BrowserAccountsFile  string      `json:"browser_accounts_file,omitempty"`
 	BrowserPublicOrigin  string      `json:"browser_public_origin,omitempty"`
 	BrowserPublicPlayers []string    `json:"browser_public_players,omitempty"`
+	ExperimentsEnabled   bool        `json:"experiments_enabled,omitempty"`
 }
 
 var namePattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,32}$`)

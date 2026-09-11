@@ -14,13 +14,13 @@ async function api(path,body){
  const data=await response.json();
  if(!response.ok){if(response.status===401&&path!=='login'){token='';sessionStorage.removeItem('world-session');signedOut();}throw new Error(data.error||'The world could not complete that request');}return data;
 }
-function signedOut(){state=null;heldKey=null;$('login-panel').hidden=false;$('logout').hidden=true;$('operator-panel').hidden=true;$('identity-name').textContent='Not signed in';$('identity-status').textContent='Signed membership required';$('identity-dot').classList.add('muted');$('connection').textContent='Sign in to play';$('connection').classList.remove('live');}
+function signedOut(){state=null;window.clearExpedition?.();window.updateTrustHud?.(null);heldKey=null;$('login-panel').hidden=false;$('logout').hidden=true;$('operator-panel').hidden=true;$('identity-name').textContent='Not signed in';$('identity-status').textContent='Signed membership required';$('identity-dot').classList.add('muted');$('connection').textContent='Sign in to play';$('connection').classList.remove('live');}
 $('login-form').addEventListener('submit',async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;$('login-error').textContent='';try{const d=await api('login',{player:$('player-name').value,password:$('password').value});token=d.token;sessionStorage.setItem('world-session',token);$('password').value='';await refresh();canvas.focus();}catch(e){$('login-error').textContent=e.message;}finally{button.disabled=false;}});
 $('logout').addEventListener('click',async()=>{try{await api('logout',{});}catch{}token='';sessionStorage.removeItem('world-session');signedOut();});
 function badge(id,allowed){$(id).textContent=allowed?'ALLOWED':'LOCKED';$(id).classList.toggle('allow',allowed);}
 async function refresh(){
  if(!token||polling)return;polling=true;
- try{const d=await api('state');state=d;$('login-panel').hidden=true;$('logout').hidden=false;
+ try{const d=await api('state');state=d;window.renderExpedition?.(d);window.updateTrustHud?.(d);$('login-panel').hidden=true;$('logout').hidden=false;
   const live=d.ready&&d.engine_online,connected=d.frame.players?.some(p=>p.name===d.player);
   $('connection').textContent=live?'● Live world':'Controls paused';$('connection').classList.toggle('live',live);
   $('identity-name').textContent=d.player;$('avatar').textContent=d.player[0].toUpperCase();$('identity-authority').textContent=d.identity.authority.replace('authority-','Authority ').toUpperCase();
@@ -44,18 +44,19 @@ async function command(action,x=0,z=0,material=''){
 function selectTool(next){tool=next;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('selected',b.dataset.tool===next));notice(next==='walk'?'W A S D to move. Click toward a nearby tile to take a step.':next==='dig'?'Click a nearby block to remove it.':'Click an empty nearby tile to place '+next+'.');canvas.focus();}
 document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>selectTool(b.dataset.tool)));
 $('lobby').addEventListener('click',()=>command('lobby'));
-$('zoom-in').addEventListener('click',()=>{zoom=Math.min(2,zoom+.15);});$('zoom-out').addEventListener('click',()=>{zoom=Math.max(.7,zoom-.15);});
+$('zoom-in').addEventListener('click',()=>{zoom=Math.min(2.8,zoom+.15);window.worldView?.zoom(zoom);});$('zoom-out').addEventListener('click',()=>{zoom=Math.max(.7,zoom-.15);window.worldView?.zoom(zoom);});
 document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>{const [x,z]=b.dataset.move.split(',').map(Number);command('move',x,z);}));
 const directions={w:[0,-1],ArrowUp:[0,-1],s:[0,1],ArrowDown:[0,1],a:[-1,0],ArrowLeft:[-1,0],d:[1,0],ArrowRight:[1,0]};
 document.addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)||$('help').open||!$('login-panel').hidden)return;const k=e.key.length===1?e.key.toLowerCase():e.key;if(directions[k]){e.preventDefault();heldKey=k;if(!e.repeat){lastMove=Date.now();command('move',...directions[k]);}}if('12345'.includes(k)&&k.length===1){e.preventDefault();selectTool(['walk','stone','wood','glass','dig'][Number(k)-1]);}});
 document.addEventListener('keyup',e=>{if(e.key.toLowerCase()===heldKey?.toLowerCase())heldKey=null;});window.addEventListener('blur',()=>heldKey=null);document.addEventListener('visibilitychange',()=>{if(document.hidden)heldKey=null;});
-function tileAt(e){if(!geometry)return null;const b=canvas.getBoundingClientRect(),px=e.clientX-b.left,py=e.clientY-b.top;for(let n=hitTiles.length-1;n>=0;n--){const tile=hitTiles[n],points=tile.points;let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const [xi,yi]=points[i],[xj,yj]=points[j];if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi))inside=!inside;}if(inside)return {x:tile.x,z:tile.z};}return null;}
+function tileAt(e){if(window.worldView)return window.worldView.pick(e);if(!geometry)return null;const b=canvas.getBoundingClientRect(),px=e.clientX-b.left,py=e.clientY-b.top;for(let n=hitTiles.length-1;n>=0;n--){const tile=hitTiles[n],points=tile.points;let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const [xi,yi]=points[i],[xj,yj]=points[j];if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi))inside=!inside;}if(inside)return {x:tile.x,z:tile.z};}return null;}
 canvas.addEventListener('pointermove',e=>{hover=tileAt(e);});canvas.addEventListener('pointerleave',()=>hover=null);
 canvas.addEventListener('click',e=>{canvas.focus();const target=tileAt(e),p=state?.frame.players?.find(p=>p.name===state.player);if(!target||!p)return;if(tool==='walk'){const dx=target.x-p.x,dz=target.z-p.z;if(Math.abs(dx)+Math.abs(dz)<.3)return;command('move',Math.abs(dx)>Math.abs(dz)?Math.sign(dx):0,Math.abs(dx)>Math.abs(dz)?0:Math.sign(dz));}else{command(tool==='dig'?'dig':'place',target.x,target.z,tool==='dig'?'':tool);}});
 $('grant-button').addEventListener('click',async()=>{const b=$('grant-button');b.disabled=true;try{for(const capability of ['region.demo.enter','region.demo.build'])await api('delegate',{player_name:$('grant-player').value,capability,area:'demo-area',ttl_seconds:60});notice('Signed court grants issued for 60 seconds.');await refresh();}catch(e){notice(e.message,true);}finally{b.disabled=false;}});
 $('help-button').addEventListener('click',()=>{$('help').showModal();heldKey=null;});for(const id of ['close-help','help-done'])$(id).addEventListener('click',()=>{$('help').close();canvas.focus();});
 function polygon(points,fill,stroke){ctx.beginPath();for(let i=0;i<points.length;i++){if(i===0)ctx.moveTo(...points[i]);else ctx.lineTo(...points[i]);}ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.6;ctx.stroke();}}
 function render(){
+ if(window.worldView){window.worldView.update(state);if(heldKey&&Date.now()-lastMove>210&&!busy){lastMove=Date.now();command('move',...directions[heldKey]);}requestAnimationFrame(render);return;}
  const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(box.width*dpr)||canvas.height!==Math.round(box.height*dpr)){canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height;
  const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#b6cdc8');sky.addColorStop(1,'#8fae99');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
  const t=Math.min(w/79,(h-75)/40)*zoom,ox=w/2-16*t,oy=h*.43-16*t/2;geometry={t,ox,oy};

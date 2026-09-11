@@ -6,6 +6,8 @@ return function(api)
  local materials={stone='mcl_core:stone',wood='mcl_trees:wood_oak',glass='mcl_core:glass'}
  local palette={air='a',['mcl_core:stonebrick']='s',['mcl_core:stone']='s',['mcl_core:goldblock']='g',['mcl_core:glass']='l',['mcl_core:wood']='w',['mcl_core:dirt_with_grass']='r',['mcl_core:dirt']='d'}
  palette['mcl_trees:wood_oak']='w'
+ palette['mcl_core:lapisblock']='b';palette['mcl_core:emeraldblock']='e';palette['mcl_nether:quartz_block']='q'
+ palette['mcl_trees:tree_oak']='t';palette['mcl_trees:leaves_oak']='v'
  local function blocked(pos)
   local node=core.get_node(pos)
   local def=core.registered_nodes[node.name]
@@ -65,7 +67,7 @@ return function(api)
    for _,c in ipairs(d.commands or {}) do
     local ok,message=false,'Command expired'
     if core.get_us_time()/1000000-started<0.75 then ok,message=execute(c) end
-    results[#results+1]={id=c.id,player=c.player,ok=ok,message=message}
+    results[#results+1]={id=c.id,player=c.player,ok=ok,message=message,action=c.action,x=c.x,z=c.z}
    end
   end)
  end)

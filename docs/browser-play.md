@@ -19,17 +19,18 @@ Do not share the private `.local/browser-url.txt` file.
 - Click in Walk mode: take a step toward that tile.
 - Keys 1–5 / hotbar: Walk, Stone, Wood, Glass, Remove.
 - Place/remove: click a nearby tile, within four blocks of your player.
-- Lobby: return to the safe starting area. Zoom buttons adjust the map.
+- Lobby: return to the safe starting area. Zoom buttons or the scroll wheel adjust the map.
+- Drag to orbit the 3D world; Follow tracks your avatar.
 - Touch screens also have an on-screen directional pad.
 
 The gold court is the protected area east of the lobby. It requires signed
 entry/build grants. North/South operator accounts have an authority desk to issue
 60-second grants and revoke their own grants. Ordinary players cannot use it.
-The activity panel shows acknowledged world actions and recent durable events.
+The [expedition desk](expedition.md), when explicitly enabled, lets players exercise fixed, self-scoped demo grants and thirteen evidence checks. The activity panel shows acknowledged world actions and recent durable events.
 
 ## What runs where
 
-The browser is an isometric canvas controller, not a port of the full Luanti client.
+The browser is a 3D controller with a 2D fallback, not a port of the full Luanti client.
 Luanti sends four compact map layers and real player positions every 250 ms.
 The bridge validates the player session and queues bounded, short-lived commands.
 Luanti performs movement/collision checks and calls its normal place/dig functions,

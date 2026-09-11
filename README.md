@@ -18,10 +18,10 @@ For automatic player startup and sign-in, run from the repository:
 ```
 
 Use W A S D to move, select a hotbar material and click a nearby tile to build.
-The isometric browser view controls the actual Luanti world. The local native
+The 3D browser view (with a 2D fallback) controls the actual Luanti world. The local native
 player client acts as its relay and must remain connected. This is a focused
 browser play area, not a full replacement for every Mineclonia client feature.
-See [browser play](docs/browser-play.md).
+See [browser play](docs/browser-play.md) and the [playable trust expedition](docs/expedition.md).
 
 Windows x64, Go 1.26.8+, and the existing local gateway/authorities A+B are required.
 See [setup](docs/setup.md).

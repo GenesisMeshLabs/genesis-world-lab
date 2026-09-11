@@ -17,21 +17,22 @@ import (
 )
 
 type Server struct {
-	mu          sync.Mutex
-	cfg         Config
-	db          *Store
-	net         *Network
-	state       State
-	authorities map[string]Authority
-	players     map[string]Player
-	identities  map[string]Document
-	roots       map[string]Document
-	freshUntil  time.Time
-	failed      bool
-	lastError   string
-	mux         *http.ServeMux
-	rates       map[string]rate
-	browser     browserState
+	mu           sync.Mutex
+	experimentMu sync.Mutex
+	cfg          Config
+	db           *Store
+	net          *Network
+	state        State
+	authorities  map[string]Authority
+	players      map[string]Player
+	identities   map[string]Document
+	roots        map[string]Document
+	freshUntil   time.Time
+	failed       bool
+	lastError    string
+	mux          *http.ServeMux
+	rates        map[string]rate
+	browser      browserState
 }
 type rate struct {
 	at time.Time
@@ -155,21 +156,10 @@ func (s *Server) Refresh(ctx context.Context) {
 	}
 	for name, d := range feeds {
 		previous := s.state.Floors[name]
-		seq, e := sequence(d)
-		old, _ := sequence(previous)
-		if e != nil || seq < old || (previous != nil && seq == old && !sameRevocations(previous, d)) {
+		if e := validateFeedAdvance(previous, d); e != nil {
 			s.freshUntil = time.Time{}
-			s.lastError = "revocation sequence rollback or equivocation"
+			s.lastError = e.Error()
 			return
-		}
-		if previous != nil {
-			for _, id := range stringsOf(previous["revoked_attestation_ids"]) {
-				if !contains(stringsOf(d["revoked_attestation_ids"]), id) {
-					s.freshUntil = time.Time{}
-					s.lastError = "revocation removal rejected"
-					return
-				}
-			}
 		}
 	}
 	changed := false
