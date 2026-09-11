@@ -1,0 +1,29 @@
+services:
+  bridge:
+    build:
+      context: ./bridge
+    image: genesis-world-lab/bridge:local
+    ports:
+      - "8080:8080"
+    environment:
+      BRIDGE_ADDR: ":8080"
+    restart: unless-stopped
+
+  luanti:
+    image: registry.gitlab.com/luanti-org/luanti:master
+    depends_on:
+      - bridge
+    ports:
+      - "30000:30000/udp"
+    volumes:
+      - ./server/minetest.conf:/etc/luanti/minetest.conf:ro
+      - ./mods/genesismesh:/var/lib/minetest/.minetest/mods/genesismesh:ro
+      - luanti-world:/var/lib/minetest/.minetest/worlds
+    environment:
+      # Reachable from inside the luanti container via the compose network.
+      GENESISMESH_BRIDGE_URL: "http://bridge:8080"
+    command: ["--server", "--config", "/etc/luanti/minetest.conf"]
+    restart: unless-stopped
+
+volumes:
+  luanti-world:
