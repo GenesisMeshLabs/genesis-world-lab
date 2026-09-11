@@ -331,6 +331,10 @@ func principal(r *http.Request) Principal { return r.Context().Value(principalKe
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	if s.publicBrowserRequest(r) && r.URL.Path != "/" && !strings.HasPrefix(r.URL.Path, "/play/") {
+		http.NotFound(w, r)
+		return
+	}
 	if r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/play/") {
 		s.serveBrowser(w, r)
 		return

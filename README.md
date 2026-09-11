@@ -8,6 +8,9 @@ evidence; a Go bridge verifies it and a Luanti mod enforces short permission lea
 
 **Play in your browser:** <http://127.0.0.1:8789/play/>
 
+Public demo: **https://world.genesismesh.org/play/** (Alice only; served from this
+local machine through its dedicated [Cloudflare tunnel](docs/public-endpoint.md)).
+
 For automatic player startup and sign-in, run from the repository:
 
 ```powershell

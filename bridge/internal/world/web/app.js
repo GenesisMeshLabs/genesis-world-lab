@@ -1,6 +1,9 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const canvas=$('world'),ctx=canvas.getContext('2d');
+if(!['127.0.0.1','localhost','[::1]'].includes(location.hostname)){
+ for(const option of [...$('player-name').options])if(option.value!=='alice')option.remove();
+}
 let token=sessionStorage.getItem('world-session')||'',state=null,tool='walk',zoom=1,hover=null,geometry=null,hitTiles=[],busy=false,heldKey=null,lastMove=0,lastResult='',lastNotice=0,polling=false;
 const fragment=new URLSearchParams(location.hash.slice(1));
 if(fragment.has('session')){token=fragment.get('session');sessionStorage.setItem('world-session',token);history.replaceState(null,'',location.pathname);}

@@ -118,3 +118,49 @@ func TestBrowserSessionExpiryAndLoginQuota(t *testing.T) {
 		t.Fatal("login flood accepted")
 	}
 }
+
+func TestPublicBrowserAllowsOnlyExactOriginAndApprovedPlayers(t *testing.T) {
+	f, token := browserFixture(t)
+	f.s.cfg.BrowserPublicOrigin = "https://world.example.org"
+	f.s.cfg.BrowserPublicPlayers = []string{"alice"}
+	publicCall := func(path, origin, auth string) int {
+		r := httptest.NewRequest("GET", "http://world.example.org"+path, nil)
+		r.Header.Set("X-Forwarded-Proto", "https")
+		if origin != "" {
+			r.Header.Set("Origin", origin)
+		}
+		if auth != "" {
+			r.Header.Set("Authorization", "Bearer "+auth)
+		}
+		w := httptest.NewRecorder()
+		f.s.ServeHTTP(w, r)
+		return w.Code
+	}
+	if code := publicCall("/play/", "", ""); code != 200 {
+		t.Fatal("public page", code)
+	}
+	r := httptest.NewRequest("GET", "http://world.example.org/play/", nil)
+	r.Header.Set("X-Forwarded-Proto", "http")
+	w := httptest.NewRecorder()
+	f.s.ServeHTTP(w, r)
+	if w.Code != 308 || w.Header().Get("Location") != "https://world.example.org/play/" {
+		t.Fatal("public HTTP did not redirect to HTTPS")
+	}
+	if code := publicCall("/play/api/state", "https://world.example.org", token); code != 200 {
+		t.Fatal("public player", code)
+	}
+	if code := publicCall("/play/api/state", "https://evil.example", token); code != 403 {
+		t.Fatal("foreign origin", code)
+	}
+	if code := publicCall("/v1/status", "", "north"); code != 404 {
+		t.Fatal("internal API exposed", code)
+	}
+	f.s.cfg.BrowserPublicPlayers = []string{"bob"}
+	if code := publicCall("/play/api/state", "https://world.example.org", token); code != 403 {
+		t.Fatal("unapproved player", code)
+	}
+	f.s.cfg.BrowserPublicOrigin = "http://world.example.org"
+	if f.s.cfg.Validate() == nil {
+		t.Fatal("plaintext public origin accepted")
+	}
+}

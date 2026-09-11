@@ -68,6 +68,9 @@ core.after(0,function()
    auth.create_auth(name,core.get_password_hash(name,account.password))
    auth.set_privileges(name,{interact=true,shout=true})
   end
+  -- The private account file is the source of truth for operator-driven rotation.
+  -- Do not rewrite privileges when updating an existing account password.
+  auth.set_password(name,core.get_password_hash(name,account.password))
  end
 end)
 core.register_on_prejoinplayer(function(name)
