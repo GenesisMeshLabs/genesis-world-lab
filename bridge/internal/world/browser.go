@@ -45,6 +45,9 @@ type engineResult struct {
 	Player  string `json:"player"`
 	OK      bool   `json:"ok"`
 	Message string `json:"message"`
+	Action  string `json:"action,omitempty"`
+	X       int    `json:"x,omitempty"`
+	Z       int    `json:"z,omitempty"`
 }
 type engineFrame struct {
 	Layers  []string       `json:"layers"`
@@ -149,6 +152,13 @@ func (s *Server) serveBrowser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch r.URL.Path {
+	case "/play/api/experiment":
+		s.mu.Unlock()
+		if r.Method != "POST" {
+			w.WriteHeader(405)
+			return
+		}
+		s.experiment(w, r, name)
 	case "/play/api/state":
 		if r.Method != "GET" {
 			s.mu.Unlock()
@@ -191,6 +201,7 @@ func (s *Server) serveBrowser(w http.ResponseWriter, r *http.Request) {
 			authorities = append(authorities, a.Name)
 		}
 		result := Document{"player": name, "identity": s.identity(name), "operator": s.players[name].OperatorAuthority != "", "ready": s.healthy(), "engine_online": time.Since(s.browser.Updated) < 2*time.Second, "frame": s.browser.Frame, "capabilities": caps, "events": visible, "grants": grants, "players": players, "authorities": authorities, "expires_at": session.Expires}
+		result["expedition"] = s.expeditionView(name)
 		s.mu.Unlock()
 		respond(w, 200, result)
 	case "/play/api/command":
@@ -391,6 +402,7 @@ func (s *Server) gameFrame(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	s.observeExpedition(frame)
 	// Preserve recent acknowledged actions when a frame has no new results.
 	frame.Results = append(s.browser.Frame.Results, frame.Results...)
 	if len(frame.Results) > 24 {

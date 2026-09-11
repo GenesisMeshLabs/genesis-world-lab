@@ -1,6 +1,13 @@
 {
   "name": "genesis-world-lab-ui-tests",
   "private": true,
-  "scripts": {"test": "node --test tests/web/*.test.mjs"},
-  "devDependencies": {"jsdom": "29.1.1"}
+  "scripts": {
+    "test": "node --test tests/web/*.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "29.1.1"
+  },
+  "dependencies": {
+    "three": "0.186.0"
+  }
 }
