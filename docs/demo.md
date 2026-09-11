@@ -16,7 +16,7 @@ go test ./internal/server -run TestDemoScenario -v
 
 ## Interactive version (server + game client)
 
-1. Start the stack: `docker compose up --build` (see [setup.md](setup.md)).
+1. Start the bridge (`cd bridge && go run .`) and the Luanti server with the mod installed (see [setup.md](setup.md)).
 2. Connect two Luanti clients to `localhost:30000` as `alice` and `bob`.
 3. Have `bob` walk toward the protected demo area
    (default bounds: `-16,-16,-16` to `16,16,16`, see `server/minetest.conf`).

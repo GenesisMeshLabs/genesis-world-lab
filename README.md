@@ -17,16 +17,22 @@ game.
 | `bridge/` | GenesisMesh Game Bridge — a Go HTTP service translating game requests into identity/capability/delegation/audit operations (section 4.3) |
 | `mods/genesismesh/` | Luanti server mod that calls the bridge and enforces its decisions in-game (section 4.2) |
 | `server/minetest.conf` | Luanti server config for the demo world, including the protected demo area |
-| `docker-compose.yml` | Runs the bridge and a Luanti + Mineclonia server together |
+| `docker-compose.yml` | Optional containerized setup (see [docs/setup.md](docs/setup.md)) — native is the primary path |
 | `docs/` | Setup, bridge API reference, capability list, and demo walkthrough |
 
-## Quick start
+## Quick start (native, no Docker)
 
 ```bash
-docker compose up --build
+# 1. run the bridge
+cd bridge && go run .
+
+# 2. in another terminal, point Luanti at it and start the server
+#    (install Luanti + Mineclonia first — see docs/setup.md)
+ln -s "$(pwd)/mods/genesismesh" ~/.minetest/worlds/<your-world>/worldmods/genesismesh
+luantiserver --config server/minetest.conf
 ```
 
-See [docs/setup.md](docs/setup.md) for prerequisites and details, and
+See [docs/setup.md](docs/setup.md) for full prerequisites and details, and
 [docs/demo.md](docs/demo.md) to run the delegation/revocation demo.
 
 ## Capability model

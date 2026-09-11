@@ -7,10 +7,11 @@ verified — see the note under each for which.
 
 ## Phase 1: Playable base (section 8)
 
-- [x] Docker Compose stack defined for a Luanti + Mineclonia server (`docker-compose.yml`, `server/minetest.conf`)
-- [x] Persistent multiplayer world volume configured (`luanti-world` volume in `docker-compose.yml`)
+- [x] Native (no Docker) setup path documented — run the bridge with `go run .`, install the mod, start Luanti with `server/minetest.conf` (see `docs/setup.md`)
+- [x] Server config for a persistent world (`server/minetest.conf`)
 - [x] Protected demo area defined (bounds in `server/minetest.conf`, enforced in `mods/genesismesh/init.lua`)
-- [ ] Actually run Luanti + Mineclonia end to end — **needs a real Luanti install/Docker daemon**; this sandbox has no Docker daemon and no Luanti binary, so the stack has not been started or played
+- [ ] Actually run Luanti + Mineclonia end to end — **needs a real Luanti install**; this sandbox has no Luanti binary, so the server has not been started or played
+- [ ] *(optional, not required)* `docker-compose.yml` / `bridge/Dockerfile` kept as an alternative, not the primary path — unverified either way (no Docker daemon in this sandbox)
 
 ## Phase 2: GenesisMesh connection (section 8)
 
@@ -18,7 +19,7 @@ verified — see the note under each for which.
 - [x] GenesisMesh Game Bridge created (`bridge/`) — Go service, `go build ./...` and `go vet ./...` clean
 - [x] Link test players to GenesisMesh identities — `POST /v1/identities/link`, called from the mod's `on_joinplayer`
 - [x] First capability checks applied — default capabilities on link, live `POST /v1/check` for the protected demo area, enforced in the mod's `is_protected` override and join-area `globalstep`
-- [ ] Verified against a running Luanti server — **not run in this sandbox** (no Docker daemon, no Luanti binary); only the bridge's own HTTP API is exercised by automated tests
+- [ ] Verified against a running Luanti server — **not run in this sandbox** (no Luanti binary available); only the bridge's own HTTP API is exercised by automated tests
 
 ## Phase 3: Delegation demo (section 8, section 4.5)
 
@@ -32,7 +33,7 @@ verified — see the note under each for which.
 
 ## Phase 4: Public-quality demo (section 8)
 
-- [ ] One-command startup process — `docker compose up --build` is written but **unverified**: no Docker daemon in this sandbox to actually run it
+- [ ] One-command-ish native startup (bridge + server) — steps documented in `docs/setup.md` but **unverified**: no Luanti binary in this sandbox to actually run it
 - [x] Demo guide written (`docs/demo.md`)
 - [ ] Record a short demonstration video
 - [ ] Publish the project under the GenesisMeshLabs organization
@@ -58,7 +59,7 @@ verified — see the note under each for which.
 
 ## Minimum acceptance criteria (section 9)
 
-- [ ] A new tester can start the project using the written guide — guide exists, **unverified end to end** (no Docker daemon here)
+- [ ] A new tester can start the project using the written guide — guide exists, **unverified end to end** (no Luanti binary here)
 - [ ] Two players can join and play — needs a running server
 - [x] A player without the required capability is denied access to the demo area — proven by `TestDemoScenario` against the bridge; mod-side enforcement written but not run against real Luanti
 - [x] An authorized identity can grant a limited, temporary capability — `POST /v1/delegate` with `ttl_seconds`, tested
@@ -72,4 +73,5 @@ verified — see the note under each for which.
 ## Known gaps / next steps
 
 - No real GenesisMesh backend exists yet to integrate with; the bridge's identity/capability/audit stores are demo-grade in-memory stand-ins with `TODO` markers at every point a real GenesisMesh call belongs (`bridge/internal/identity`, `bridge/internal/capability`, `bridge/internal/audit`).
-- Nothing in this environment can install/run Luanti or start a Docker daemon, so every "run it and see" item above needs to be verified on real hardware (the ASUS machine per section 6) before being checked off.
+- Nothing in this environment can install/run Luanti, so every "run it and see" item above needs to be verified on real hardware (the ASUS machine per section 6) before being checked off.
+- Project decision: run natively (bridge as a Go process, Luanti installed directly), not via Docker. Docker files are kept only as an optional extra.
