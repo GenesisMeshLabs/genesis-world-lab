@@ -34,15 +34,16 @@ type Principal struct {
 	Game      bool   `json:"game,omitempty"`
 }
 type Config struct {
-	Address     string      `json:"address"`
-	StateFile   string      `json:"state_file"`
-	World       string      `json:"world"`
-	Area        string      `json:"area"`
-	GatewayURL  string      `json:"gateway_url"`
-	Owner       string      `json:"owner"`
-	Authorities []Authority `json:"authorities"`
-	Players     []Player    `json:"players"`
-	Principals  []Principal `json:"principals"`
+	Address             string      `json:"address"`
+	StateFile           string      `json:"state_file"`
+	World               string      `json:"world"`
+	Area                string      `json:"area"`
+	GatewayURL          string      `json:"gateway_url"`
+	Owner               string      `json:"owner"`
+	Authorities         []Authority `json:"authorities"`
+	Players             []Player    `json:"players"`
+	Principals          []Principal `json:"principals"`
+	BrowserAccountsFile string      `json:"browser_accounts_file,omitempty"`
 }
 
 var namePattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,32}$`)

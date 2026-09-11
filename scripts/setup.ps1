@@ -25,6 +25,9 @@ Copy-Item "$RepoRoot/mods/genesismesh/*" "$LabRoot/world/worldmods/genesismesh/"
 $accounts=@{}
 foreach($name in @('alice','bob','north','south')){$accounts[$name]=@{password=[IO.File]::ReadAllText("$LabRoot/credentials/$name.password").Trim();operator=($name -in @('north','south'))}}
 [IO.File]::WriteAllText("$LabRoot/world/.private/accounts.json",($accounts|ConvertTo-Json -Depth 4))
+$privateConfig=Get-Content "$LabRoot/config.json" -Raw|ConvertFrom-Json
+$privateConfig|Add-Member -NotePropertyName browser_accounts_file -NotePropertyValue "$LabRoot/world/.private/accounts.json" -Force
+[IO.File]::WriteAllText("$LabRoot/config.json",($privateConfig|ConvertTo-Json -Depth 8))
 $config=[IO.File]::ReadAllText("$RepoRoot/server/minetest.conf")
 $token=[IO.File]::ReadAllText("$LabRoot/credentials/game.token").Trim()
 [IO.File]::WriteAllText("$LabRoot/server.conf",$config+"`ngenesismesh.game_token = $token`n")

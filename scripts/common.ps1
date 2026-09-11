@@ -3,15 +3,17 @@ $RepoRoot=Split-Path $PSScriptRoot -Parent
 $LabRoot=Join-Path $RepoRoot '.local'
 $LuantiExe=Join-Path $LabRoot 'runtime/luanti-5.17.0-win64/bin/luanti.exe'
 function Protect-LabDirectory([string]$Path){
- $acl=New-Object Security.AccessControl.DirectorySecurity
+ $directory=Get-Item -LiteralPath $Path
+ $acl=$directory.GetAccessControl([Security.AccessControl.AccessControlSections]::Access)
  $acl.SetAccessRuleProtection($true,$false)
  $owner=[Security.Principal.WindowsIdentity]::GetCurrent().User
- $acl.SetOwner($owner)
+ foreach($existing in @($acl.Access)){$acl.RemoveAccessRuleSpecific($existing)}
  foreach($sid in @($owner.Value,'S-1-5-18','S-1-5-32-544')){
   $rule=New-Object Security.AccessControl.FileSystemAccessRule([Security.Principal.SecurityIdentifier]$sid,'FullControl','ContainerInherit, ObjectInherit','None','Allow')
   $acl.AddAccessRule($rule)
  }
- Set-Acl -LiteralPath $Path -AclObject $acl
+ # Apply only the DACL; setting owner/audit sections can require elevation.
+ $directory.SetAccessControl($acl)
 }
 function Get-LabProcess([string]$Name,[string]$Executable){
  $file=Join-Path $LabRoot "$Name.pid"

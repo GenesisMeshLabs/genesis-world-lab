@@ -25,5 +25,6 @@ secrets/
 /downloads/
 /dist/
 /coverage/
+/node_modules/
 *.o
 .DS_Store

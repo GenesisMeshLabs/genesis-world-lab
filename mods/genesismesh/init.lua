@@ -163,6 +163,9 @@ core.after(0,function()
 end)
 -- Narrow hooks for automated engine tests; no player bypass or public grant API.
 genesismesh={held=held,in_demo_area=inside,refresh=refresh,lobby=lobby}
+if settings:get_bool('genesismesh.browser_enabled',false) then
+ dofile(core.get_modpath('genesismesh')..'/browser.lua')({request=request,held=held,inside=inside,lobby=lobby,audit=audit_boundary})
+end
 core.log('action','[genesismesh] Signed-membership enforcement loaded')
 -- Local operator shutdown request: let Luanti flush its world normally.
 local control_elapsed=0

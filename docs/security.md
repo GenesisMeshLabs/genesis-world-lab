@@ -2,6 +2,10 @@
 
 Local invite-only demonstration, not a zero-vulnerability or accreditation claim.
 
+The optional browser controller adds separate 30-minute player sessions, exact
+same-origin and Host validation, CSP and player-bound command queues. Native game
+credentials are never shipped to the browser. See [browser security](browser-play.md#security).
+
 Pinned Ed25519 signatures, issuer revocation, durable local denial, persistent
 sequence floors and rejection of rollback/equivocation/revocation removal are
 implemented. Normal startup refuses missing/truncated/inconsistent state.

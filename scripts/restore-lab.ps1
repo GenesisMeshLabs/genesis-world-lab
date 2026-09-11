@@ -18,6 +18,7 @@ Protect-LabDirectory $target
 foreach($file in $manifest.files){$path=Join-Path $target $file.path;New-Item -ItemType Directory -Force (Split-Path $path -Parent)|Out-Null;Copy-Item -LiteralPath (Join-Path $source $file.path) -Destination $path}
 $c=Get-Content "$target/config.json" -Raw|ConvertFrom-Json
 $c.address="127.0.0.1:$BridgePort";$c.state_file="$target/state/bridge.bolt"
+if($c.PSObject.Properties.Name -contains 'browser_accounts_file'){$c.browser_accounts_file="$target/world/.private/accounts.json"}
 foreach($a in $c.authorities){
  $a.root_file=Join-Path "$target/credentials" ([IO.Path]::GetFileName($a.root_file))
  $operatorKey=Join-Path "$target/credentials" ([IO.Path]::GetFileName($a.operator_key_file))
