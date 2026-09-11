@@ -1,69 +1,48 @@
-# GenesisMesh Luanti Server Lab
+# GenesisMesh World Lab
 
-A playable Mineclonia (Luanti) server with **GenesisMesh** added as its trust
-and authority layer — identity, capabilities, delegation, revocation, and
-audit, made visible through normal gameplay.
+Native Windows Mineclonia with real GenesisMesh signed identities, expiring
+delegation, revocation and durable audit. Two independent authorities sign
+evidence; a Go bridge verifies it and a Luanti mod enforces short permission leases.
 
-Full requirements and rationale: [GenesisMesh-Luanti-Server-Requirements.md](GenesisMesh-Luanti-Server-Requirements.md).
-Progress against those requirements: [TRACKING.md](TRACKING.md).
+## Run
 
-This is a GenesisMesh demonstration and test environment, not a commercial
-game.
+Windows x64, Go 1.26.8+, and the existing local gateway/authorities A+B are required.
+See [setup](docs/setup.md).
 
-## What's here
-
-| Path | What it is |
-| --- | --- |
-| `bridge/` | GenesisMesh Game Bridge — a Go HTTP service translating game requests into identity/capability/delegation/audit operations (section 4.3) |
-| `mods/genesismesh/` | Luanti server mod that calls the bridge and enforces its decisions in-game (section 4.2) |
-| `server/minetest.conf` | Luanti server config for the demo world, including the protected demo area |
-| `docker-compose.yml` | Optional containerized setup (see [docs/setup.md](docs/setup.md)) — native is the primary path |
-| `docs/` | Setup, bridge API reference, capability list, and demo walkthrough |
-
-## Quick start (native, no Docker)
-
-```bash
-# 1. run the bridge
-cd bridge && go run .
-
-# 2. in another terminal, point Luanti at it and start the server
-#    (install Luanti + Mineclonia first — see docs/setup.md)
-ln -s "$(pwd)/mods/genesismesh" ~/.minetest/worlds/<your-world>/worldmods/genesismesh
-luantiserver --config server/minetest.conf
+```powershell
+.\scripts\setup.ps1
+.\scripts\start-lab.ps1 -Player alice
+.\scripts\start-lab.ps1 -Player bob
 ```
 
-See [docs/setup.md](docs/setup.md) for full prerequisites and details, and
-[docs/demo.md](docs/demo.md) to run the delegation/revocation demo.
+Game: **127.0.0.1:30000 UDP**. Bridge: <http://127.0.0.1:8789/readyz>.
+Try `/gm_demo` in Alice's game, then grant temporary access:
 
-## Capability model
+```powershell
+.\scripts\demo.ps1 -Action grant -Player alice -Authority authority-b -Seconds 60
+.\scripts\demo.ps1 -Action audit
+```
 
-See [docs/capabilities.md](docs/capabilities.md) for the initial capability
-list and the rules the bridge enforces (scoping, delegation, revocation,
-audit).
+Revoke either printed ID with `demo.ps1 -Action revoke -Authority authority-b -GrantId <id>`.
+Stop gracefully: `scripts/stop-lab.ps1`. No Docker is used.
 
-## Safety
+[Demo](docs/demo.md) · [Capabilities](docs/capabilities.md) ·
+[API](docs/bridge-api.md) · [Security](docs/security.md) ·
+[Acceptance](docs/acceptance.md) · [Tracking](TRACKING.md)
 
-- GenesisMesh credentials live only in the bridge, never in the Luanti mod
-  or the repository.
-- The bridge fails closed: if it can't be reached, protected actions are
-  denied rather than allowed.
-- See section 7 of the requirements doc for the full list of safety
-  requirements this project follows.
+## Scope and private data
 
-## Licensing and reuse
+Implemented: invite-only accounts, signed memberships and grants, parent attenuation,
+cascading revocation, persistent floors, in-game HUD/court/operator commands,
+transactional audit, backup/restore and live two-client acceptance tests.
 
-| Component | License | Source |
-| --- | --- | --- |
-| Luanti | LGPL-2.1 (engine), various (assets) | <https://github.com/luanti-org/luanti> |
-| Mineclonia | LGPL-3.0 (code), CC-BY-SA-4.0 (media, per-asset) | <https://codeberg.org/mineclonia/mineclonia> |
-| `mods/genesismesh` (this repo) | See repository license | — |
-| `bridge` (this repo) | See repository license | — |
+Keys, tokens, passwords, worlds, runtime downloads, databases, logs and backups stay
+under ignored `.local/`. Never publish a backup: it contains credentials.
+The committed server configuration is a credential-free template.
 
-Check each upstream project's own LICENSE file for the authoritative terms
-before redistributing.
+This is an eight-player local lab, not a public hosting service or accreditation
+claim. The game is a trusted proxy for custodial player identities.
 
-## Status
-
-Early scaffold: Phase 1–2 foundations (bridge service with a working
-identity/capability/audit model and its test suite, mod skeleton, compose
-stack). See [TRACKING.md](TRACKING.md) for what's done and what's next.
+Original code uses [MIT](LICENSE). Separately downloaded Luanti 5.17.0 and
+Mineclonia 0.123.1 retain their upstream engine/game/media licenses; no upstream
+assets or runtime binaries are committed.
