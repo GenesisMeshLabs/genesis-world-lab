@@ -1,5 +1,20 @@
 # Acceptance evidence — 2026-09-11
 
+## Browser UI addition — 2026-09-12 local time
+
+- 12 Go tests pass, including browser origin/Host isolation, expiring sessions,
+  player-bound commands, fresh-engine requirements, quotas and session replacement.
+- Seven DOM tests pass: live tile rendering, keyboard taps, input isolation,
+  expiry, material selection, raised-block picking and safe activity text.
+- 11/11 live browser-command checks pass against actual Luanti players and blocks:
+  movement, commons placement/removal, court denial, signed entry/build grants,
+  revoke denial, authorized cleanup and revocation-driven ejection.
+- Go race tests, go vet, govulncheck and npm dependency audit pass.
+- Chrome returns ERR_BLOCKED_BY_CLIENT for the local UI before loading the app;
+  no visual browser approval or bypass is claimed. See [browser play](browser-play.md).
+
+The earlier native implementation evidence follows.
+
 Verified on this Windows machine with native Luanti 5.17.0, Mineclonia 0.123.1,
 Go 1.26.8 and the existing local GenesisMesh gateway/authority A/B services.
 

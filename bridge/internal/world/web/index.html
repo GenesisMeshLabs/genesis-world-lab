@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GenesisMesh · World Lab</title><link rel="stylesheet" href="/play/style.css"><script src="/play/app.js" defer></script></head>
+<body>
+<header><a class="brand" href="/play/"><span class="mark">G</span><span>GENESISMESH <b>WORLD LAB</b></span></a><div class="header-right"><span id="connection" class="pill">Connecting</span><button id="help-button" class="quiet">How to play</button><button id="logout" class="quiet" hidden>Sign out</button></div></header>
+<main>
+<section class="stage">
+<div class="stage-heading"><div><p class="eyebrow">WORLD 001 / SHARED SANDBOX</p><h1>A world built on trust.</h1></div><span class="world-tag">MINECLONIA · LIVE WORLD</span></div>
+<div class="viewport"><canvas id="world" tabindex="0" aria-label="Live isometric world. Use W A S D to walk; select a material and click a nearby tile to build."></canvas>
+<div class="map-label"><span class="dot"></span>THE COMMONS <span>→ GOLD COURT</span></div>
+<div class="viewport-tools"><button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-in" aria-label="Zoom in">+</button><button id="lobby" title="Return to the lobby">⌂ Lobby</button></div>
+<div id="notice" role="status" aria-live="polite">Sign in to enter the world.</div>
+<div class="hotbar" aria-label="Tools">
+<button data-tool="walk" class="selected"><kbd>1</kbd><span class="tool-icon">↟</span>Walk</button>
+<button data-tool="stone"><kbd>2</kbd><span class="swatch stone"></span>Stone</button>
+<button data-tool="wood"><kbd>3</kbd><span class="swatch wood"></span>Wood</button>
+<button data-tool="glass"><kbd>4</kbd><span class="swatch glass"></span>Glass</button>
+<button data-tool="dig"><kbd>5</kbd><span class="tool-icon">⌫</span>Remove</button>
+</div>
+<div class="dpad"><button data-move="0,-1" aria-label="Move north">↑</button><div><button data-move="-1,0" aria-label="Move west">←</button><button data-move="0,1" aria-label="Move south">↓</button><button data-move="1,0" aria-label="Move east">→</button></div></div>
+<div id="login-panel" class="login-panel"><p class="eyebrow">YOUR PLACE IN THE MESH</p><h2>Enter the world.</h2><p>Walk, build and explore. Your signed identity decides where you can go.</p><form id="login-form"><label for="player-name">Player</label><select id="player-name"><option value="alice">Alice · Authority A</option><option value="bob">Bob · Authority B</option><option value="north">North · Operator A</option><option value="south">South · Operator B</option></select><label for="password">Account password</label><input id="password" type="password" required autocomplete="current-password"><button class="primary" type="submit">Enter world <span>→</span></button></form><p class="small">On this machine, <code>scripts/play-web.ps1</code> signs you in and starts your player automatically.</p><p id="login-error" role="alert"></p></div>
+</div>
+<div class="stage-footer"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · click a nearby tile to build · <kbd>1–5</kbd> tools</span><span id="coordinates">Waiting for player</span></div>
+</section>
+<aside>
+<section class="identity-card"><p class="eyebrow">YOU IN THE MESH</p><div class="identity-line"><div id="avatar" class="avatar">A</div><div><h2 id="identity-name">Not signed in</h2><p id="identity-authority">Choose your player</p></div></div><div class="identity-status"><span id="identity-dot" class="dot muted"></span><span id="identity-status">Signed membership required</span></div></section>
+<section class="rights"><div class="section-title"><h3>Your permissions</h3><span id="rights-count">0 ACTIVE</span></div><div class="right"><div><strong>Explore the commons</strong><small>Movement & shared building</small></div><span id="baseline" class="badge">—</span></div><div class="right"><div><strong>Enter the gold court</strong><small>region.demo.enter</small></div><span id="entry" class="badge">—</span></div><div class="right"><div><strong>Build in the court</strong><small>region.demo.build</small></div><span id="build" class="badge">—</span></div><p class="small">Court access needs a temporary authority grant. Revoked or expired rights stop working in the world.</p></section>
+<section id="operator-panel" hidden><div class="section-title"><h3>Authority desk</h3><span>OPERATOR</span></div><label for="grant-player">Grant to player</label><select id="grant-player"><option>alice</option><option>bob</option></select><button id="grant-button" class="primary">Grant court access · 60s</button><div id="grant-list"></div></section>
+<section><div class="section-title"><h3>Players in the world</h3><span id="player-count">0 ONLINE</span></div><div id="players" class="players"><p class="small">Waiting for the world</p></div></section>
+<section class="activity-section"><div class="section-title"><h3>World activity</h3><span class="dot"></span></div><ol id="activity"><li class="small">Your actions and trust decisions appear here.</li></ol></section>
+<div class="mesh-footer"><span class="mesh-node">A</span><span class="mesh-link"></span><span class="mesh-node">B</span><p>Two authorities. One shared world.<br><b>Permissions verified by GenesisMesh.</b></p></div>
+</aside></main>
+<dialog id="help"><button id="close-help" class="close" aria-label="Close help">×</button><p class="eyebrow">QUICK START</p><h2>Make your first block.</h2><ol><li>Use <b>W A S D</b> or arrow keys to walk. Click the world to focus controls.</li><li>Pick Stone, Wood or Glass, then click an empty tile within four blocks of your player.</li><li>Pick Remove to dig a nearby block. The browser edits one layer; foundations stay intact.</li><li>Walk east toward the gold court. An operator must grant entry and building rights before you can use it.</li></ol><p>This is a live isometric controller for the native Luanti world. Your local player relay must remain connected. World changes are saved by Luanti.</p><button id="help-done" class="primary">Let's play</button></dialog>
+</body></html>

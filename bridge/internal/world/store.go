@@ -142,3 +142,26 @@ func (s *Store) Audit(after uint64) ([]Event, error) {
 func (s *Store) Backup(path string) error {
 	return s.db.View(func(tx *bolt.Tx) error { return tx.CopyFile(path, 0600) })
 }
+
+// LatestAudit serves a bounded live activity feed without scanning old history.
+func (s *Store) LatestAudit(limit int) ([]Event, error) {
+	out := []Event{}
+	if limit < 1 || limit > 200 {
+		limit = 200
+	}
+	err := s.db.View(func(tx *bolt.Tx) error {
+		cursor := tx.Bucket([]byte("audit")).Cursor()
+		for k, v := cursor.Last(); k != nil && len(out) < limit; k, v = cursor.Prev() {
+			var event Event
+			if err := json.Unmarshal(v, &event); err != nil {
+				return err
+			}
+			out = append(out, event)
+		}
+		return nil
+	})
+	for i, j := 0, len(out)-1; i < j; i, j = i+1, j-1 {
+		out[i], out[j] = out[j], out[i]
+	}
+	return out, err
+}

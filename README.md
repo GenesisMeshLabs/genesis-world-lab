@@ -6,6 +6,20 @@ evidence; a Go bridge verifies it and a Luanti mod enforces short permission lea
 
 ## Run
 
+**Play in your browser:** <http://127.0.0.1:8789/play/>
+
+For automatic player startup and sign-in, run from the repository:
+
+```powershell
+.\scripts\play-web.ps1 -Player alice
+```
+
+Use W A S D to move, select a hotbar material and click a nearby tile to build.
+The isometric browser view controls the actual Luanti world. The local native
+player client acts as its relay and must remain connected. This is a focused
+browser play area, not a full replacement for every Mineclonia client feature.
+See [browser play](docs/browser-play.md).
+
 Windows x64, Go 1.26.8+, and the existing local gateway/authorities A+B are required.
 See [setup](docs/setup.md).
 

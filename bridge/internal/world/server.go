@@ -31,6 +31,7 @@ type Server struct {
 	lastError   string
 	mux         *http.ServeMux
 	rates       map[string]rate
+	browser     browserState
 }
 type rate struct {
 	at time.Time
@@ -104,6 +105,7 @@ func New(c Config) (*Server, error) {
 	s.mux.HandleFunc("POST /v1/revoke", s.revoke)
 	s.mux.HandleFunc("GET /v1/audit", s.audit)
 	s.mux.HandleFunc("GET /v1/status", s.status)
+	s.initBrowser()
 	return s, nil
 }
 func (s *Server) Close() error { return s.db.Close() }
@@ -329,6 +331,10 @@ func principal(r *http.Request) Principal { return r.Context().Value(principalKe
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	if r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/play/") {
+		s.serveBrowser(w, r)
+		return
+	}
 	if r.URL.Path == "/healthz" || r.URL.Path == "/readyz" {
 		s.mux.ServeHTTP(w, r)
 		return
