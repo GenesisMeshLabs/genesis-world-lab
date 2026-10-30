@@ -161,7 +161,7 @@ Reasons:
 - the NVIDIA GPU can support local AI agents later;
 - 32 GB RAM is enough for the first local server, bridge, and supporting services.
 
-The H&M Mac should remain for work unless H&M explicitly approves personal development on it.
+The work laptop should remain for work unless the employer explicitly approves personal development on it.
 
 ## 7. Important safety requirements
 
